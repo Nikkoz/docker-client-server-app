@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  client:
+    image: ${COMPOSE_PROJECT_NAME}_client
+    container_name: ${COMPOSE_PROJECT_NAME}_client_1
+    build:
+      context: ./
+      dockerfile: docker/node/Dockerfile
+      args:
+        CURRENT_USER: ${CURRENT_USER}
+    working_dir: /var/www/client
+    tty: true
+    volumes:
+      - ./client:/var/www/client
+      - /var/www/client/node_modules
+    networks:
+      - project-network

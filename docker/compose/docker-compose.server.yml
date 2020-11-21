@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  server:
+    image: ${COMPOSE_PROJECT_NAME}_php
+    container_name: ${COMPOSE_PROJECT_NAME}_server_1
+    build:
+      context: ./
+      dockerfile: docker/Dockerfile
+      args:
+        CURRENT_USER: ${CURRENT_USER}
+    working_dir: /var/www/server
+    volumes:
+      - server-home-dir:/home/user:cached
+      - ./server:/var/www/server
+      - ./docker/php/server.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - project-network

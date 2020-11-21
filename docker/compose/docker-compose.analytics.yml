@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  analytics:
+    image: ${COMPOSE_PROJECT_NAME}_php
+    container_name: ${COMPOSE_PROJECT_NAME}_analytics_1
+    build:
+      context: ./
+      dockerfile: docker/Dockerfile
+      args:
+        CURRENT_USER: ${CURRENT_USER}
+    working_dir: /var/www/analytics
+    volumes:
+      - analytics-home-dir:/home/user:cached
+      - ./analytics:/var/www/analytics
+      - ./docker/php/analytics.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - project-network

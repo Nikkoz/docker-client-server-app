@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  &redis-service redis:
+    image: redis:5.0.7-alpine
+    container_name: ${COMPOSE_PROJECT_NAME}_redis_1
+    restart: always
+    command: redis-server
+    volumes:
+      - redis-data:/data:rw
+    networks:
+      - project-network
+
+  redis-commander: # <https://github.com/joeferner/redis-commander>
+    image: rediscommander/redis-commander:latest
+    container_name: ${COMPOSE_PROJECT_NAME}_redis_commander_1
+    depends_on:
+      - *redis-service
+    networks:
+      - project-network

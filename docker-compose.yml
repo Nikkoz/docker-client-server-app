@@ -1,0 +1,92 @@
+version: "3.8"
+
+#Docker Networks
+networks:
+  project-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: ${SUBNET_IP}
+
+#Volumes
+volumes:
+  mariadb-data-server:
+  clickhouse-db-data:
+  redis-data:
+  server-home-dir:
+  analytics-home-dir:
+
+services:
+  #PHP Services
+  &server-service server:
+    environment:
+      XDEBUG_CONFIG: "remote_host=192.168.221.1 remote_enable=1"
+      PHP_IDE_CONFIG: "serverName=Server"
+    depends_on:
+      - redis
+      - analytics
+      - mariadb
+
+  &analytics-service analytics:
+    environment:
+      XDEBUG_CONFIG: "remote_host=192.168.221.1 remote_enable=1"
+      PHP_IDE_CONFIG: "serverName=Analytics"
+    depends_on:
+      - redis
+      - clickhouse
+
+  # Client Service (VUE)
+  &client-service client:
+    ports:
+      - ${CLIENT_OUT_PORT}:8080
+
+  #Nginx Services
+  nginx:
+    ports:
+      - ${NGINX_OUT_PORT}:8088
+      - ${NGINX_OUT_PORT_ADDITIONAL}:8089
+    environment:
+      VIRTUAL_HOST: ${VIRTUAL_HOST}
+    depends_on:
+      - *server-service
+      - *client-service
+      - *analytics-service
+    links:
+      - 'server:server'
+      - 'client:client'
+      - 'analytics:analytics'
+
+  nginx-proxy:
+    ports:
+      - ${OUT_HTTP_PORT}:80
+      - ${OUT_HTTPS_PORT}:443
+
+  #Redis Services
+  redis:
+    ports:
+      - 6379
+      - ${REDIS_OUT_PORT}:6379
+
+  redis-commander: # <https://github.com/joeferner/redis-commander>
+    environment:
+      REDIS_HOSTS: 'default:redis:6379:0,cache:redis:6379:1,sessions:redis:6379:2'
+    ports:
+      - ${REDIS_COMMANDER_OUT_PORT}:8081
+
+  #DB Services
+  mariadb:
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      DB_PORT: 3306
+    ports:
+      - 3306
+      - ${DB_PORT}:3306
+
+  clickhouse:
+    ports:
+      - ${CLICKHOUSE_PORT_1}:8123
+      - ${CLICKHOUSE_PORT_2}:9000

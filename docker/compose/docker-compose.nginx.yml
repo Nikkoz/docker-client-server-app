@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  &nginx-service nginx:
+    image: nginx:alpine
+    container_name: ${COMPOSE_PROJECT_NAME}_nginx_1
+    volumes:
+      - ./server:/var/www/server
+      - ./client:/var/www/client
+      - ./analytics:/var/www/analytics
+      - ./docker/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+    working_dir: /var/www
+    networks:
+      - project-network
+
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    depends_on:
+      - *nginx-service
+    networks:
+      - project-network
