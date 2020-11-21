@@ -33,6 +33,11 @@ SERVER := server
 CLIENT := client
 ANALYTICS := analytics
 CLICKHOUSE := clickhouse
+DB := mariadb
+REDIS := redis
+REDIS_COMMANDER := redis-commander
+NGINX := nginx
+PROXY := nginx-proxy
 
 SERVER_CONTAINER_NAME := ${COMPOSE_PROJECT_NAME}_${SERVER}_1
 CLIENT_CONTAINER_NAME := ${COMPOSE_PROJECT_NAME}_${CLIENT}_1
@@ -87,7 +92,15 @@ stop:
 	@docker-compose ${COMPOSE_YML} -p $project_name stop
 
 build: memory
-	@docker-compose ${COMPOSE_YML} -p $project_name build
+	@docker-compose ${COMPOSE_YML} -p $project_name build --build-arg CURRENT_USER=$$(id -u) ${DB}
+	@docker-compose ${COMPOSE_YML} -p $project_name build ${CLICKHOUSE}
+	@docker-compose ${COMPOSE_YML} -p $project_name build ${REDIS}
+	@docker-compose ${COMPOSE_YML} -p $project_name build ${REDIS_COMMANDER}
+	@docker-compose ${COMPOSE_YML} -p $project_name build --build-arg CURRENT_USER=$$(id -u) ${ANALYTICS}
+	@docker-compose ${COMPOSE_YML} -p $project_name build --build-arg CURRENT_USER=$$(id -u) ${SERVER}
+	@docker-compose ${COMPOSE_YML} -p $project_name build --build-arg CURRENT_USER=$$(id -u) ${CLIENT}
+	@docker-compose ${COMPOSE_YML} -p $project_name build ${NGINX}
+	@docker-compose ${COMPOSE_YML} -p $project_name build ${PROXY}
 
 migrate:
 	@echo -e "Make: Database migration.\n"

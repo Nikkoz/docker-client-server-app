@@ -38,6 +38,8 @@ services:
 
   # Client Service (VUE)
   &client-service client:
+    depends_on:
+      - *server-service
     ports:
       - ${CLIENT_OUT_PORT}:8080
 
@@ -63,7 +65,7 @@ services:
       - ${OUT_HTTPS_PORT}:443
 
   #Redis Services
-  redis:
+  &redis-service redis:
     ports:
       - 6379
       - ${REDIS_OUT_PORT}:6379
@@ -71,6 +73,8 @@ services:
   redis-commander: # <https://github.com/joeferner/redis-commander>
     environment:
       REDIS_HOSTS: 'default:redis:6379:0,cache:redis:6379:1,sessions:redis:6379:2'
+    depends_on:
+      - *redis-service
     ports:
       - ${REDIS_COMMANDER_OUT_PORT}:8081
 
