@@ -18,5 +18,7 @@
 
 2. Clone git repositories to folders: server, client and analytics
 
+3. Start build: `make build && make up`
+
 #### Install XDebug
 Manual for XDebug settings in PhpStorm with Docker https://blog.denisbondar.com/post/phpstorm_docker_xdebug
